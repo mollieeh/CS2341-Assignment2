@@ -37,10 +37,11 @@ public class MinPQProcessor {
 
     // - "Execution Order: [first job completed index, next...]"
     public void printExecutionOrder(MinPriorityQueue<Job> jobQueue){
-        System.out.println("Execution order: [");
+        System.out.print("Execution order: [");
         while (!jobQueue.isEmpty()) {
-            System.out.print(jobQueue.delMin() + ", ");
+            System.out.print(jobQueue.delMin().getJobID() + ", ");
         }
+        System.out.print("]");
     }
 
     public void printAvgCompletionTime() {
