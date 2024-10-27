@@ -1,4 +1,4 @@
-public class Job {
+public class Job implements Comparable<Job> {
     private int jobID, processTime;
 
     public Job(String jobData) {
@@ -15,5 +15,17 @@ public class Job {
     }
     public int getProcessTime() {
         return processTime;
+    }
+
+    public int compareTo(Job job) {
+        if (this.processTime < job.processTime) {
+            return -1;
+        }
+        else if (this.processTime > job.processTime) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
     }
 }
