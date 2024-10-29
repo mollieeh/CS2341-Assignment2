@@ -29,6 +29,10 @@ public class MinPriorityQueue<Key extends Comparable<Key>> {
         pq[n+1] = null; // make the place of the removed element null
         return min; // return min element (previously element 1 in binary heap)
     }
+    public Key readMin() {
+        return pq[1];
+    }
+
     private void swim(int k)
     {
         while (k > 1 && less(k, k / 2)) // switched so that it exchanges when parent < child

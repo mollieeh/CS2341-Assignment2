@@ -1,5 +1,5 @@
-public class ArrivalJob extends Job {
-    private int arrival;
+public class ArrivalJob extends BaseJob implements Comparable<ArrivalJob> {
+    protected int arrival;
 
     public ArrivalJob(String jobData) {
         super(jobData);
@@ -14,4 +14,18 @@ public class ArrivalJob extends Job {
     public int getArrival() {
         return arrival;
     }
+
+
+    public int compareTo(ArrivalJob arrivalJob) {
+        if (this.arrival < arrivalJob.arrival) {
+            return -1;
+        }
+        else if (this.arrival > arrivalJob.arrival) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
+    }
 }
+
