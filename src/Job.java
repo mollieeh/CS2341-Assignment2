@@ -1,20 +1,8 @@
-public class Job implements Comparable<Job> {
-    private int jobID, processTime;
+public class Job extends BaseJob implements Comparable<Job> {
+    // implements Comparable<Job>
 
     public Job(String jobData) {
-        String[] jobAttributes = jobData.split(" ");
-        try {
-            this.jobID = Integer.parseInt(jobAttributes[0]);
-            this.processTime = Integer.parseInt(jobAttributes[1]);
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-        }
-    }
-    public int getJobID() {
-        return jobID;
-    }
-    public int getProcessTime() {
-        return processTime;
+        super(jobData);
     }
 
     public int compareTo(Job job) {
@@ -28,4 +16,5 @@ public class Job implements Comparable<Job> {
             return 0;
         }
     }
+
 }
