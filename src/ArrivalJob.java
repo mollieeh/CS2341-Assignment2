@@ -17,10 +17,10 @@ public class ArrivalJob extends BaseJob implements Comparable<ArrivalJob> {
 
 
     public int compareTo(ArrivalJob arrivalJob) {
-        if (this.arrival < arrivalJob.arrival) {
+        if (this.processTime < arrivalJob.processTime) {
             return -1;
         }
-        else if (this.arrival > arrivalJob.arrival) {
+        else if (this.processTime > arrivalJob.processTime) {
             return 1;
         }
         else {
