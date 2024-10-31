@@ -1,9 +1,10 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class MinPQProcessor {
-    // READ TASK INTO PRIORITY QUEUE: 1, 2, 3
+
     public MinPriorityQueue<Job> readTask1IntoPQ(String fileName) {
 
         try {
@@ -21,14 +22,12 @@ public class MinPQProcessor {
                 Job jobObject = new Job(jobInfo); // create a job for task 1
                 jobQueue.insert(jobObject);
             }
-
             return jobQueue; // returns the jobQueue
         } catch (FileNotFoundException e) {
             System.out.println("Error occurred while reading File");
             e.printStackTrace();
             return null;
         }
-
     }
     public MinPriorityQueue<PriorityJob> readTask2IntoPQ(String fileName) {
         try {
@@ -43,7 +42,7 @@ public class MinPQProcessor {
             MinPriorityQueue<PriorityJob> jobQueue = new MinPriorityQueue<PriorityJob>(jobAmount);
             while(scannerLines.hasNextLine()) {
                 String jobInfo = scannerLines.nextLine();
-                PriorityJob jobObject = new PriorityJob(jobInfo); // create a job for task 1
+                PriorityJob jobObject = new PriorityJob(jobInfo);
                 jobQueue.insert(jobObject);
             }
             return jobQueue; // returns the jobQueue
@@ -53,51 +52,47 @@ public class MinPQProcessor {
             return null;
         }
     }
-    public MinPriorityQueue<ArrivalJob> readTask3IntoPQ(String fileName) {
+    public ArrayList<ArrivalJob> readTask3IntoPQ(String fileName) {
+        int jobsCompleted = 0;
+        ArrayList<ArrivalJob> jobExecutionOrder = new ArrayList<ArrivalJob>();
         try {
             File jobData = new File(fileName);
             Scanner scannerCap = new Scanner(jobData);
             Scanner scannerLines = new Scanner(jobData);
-            int jobAmount = 0; //size of the queue
+            int jobAmount = 0;
             while(scannerCap.hasNextLine()) {
                 jobAmount++;
                 scannerCap.nextLine();
             }
 
-            // all the jobs sorted by arrival time
-            MinPriorityQueue<ArrivalJob> allArrivalJobsQueue = new MinPriorityQueue<ArrivalJob>(jobAmount);
+            //initialize and load all jobs into Array of incoming jobs
+            ArrayList<ArrivalJob> incomingJobs = new ArrayList<ArrivalJob>();
             while(scannerLines.hasNextLine()) {
                 String jobInfo = scannerLines.nextLine();
                 ArrivalJob jobObject = new ArrivalJob(jobInfo); // create a job for task 1
-                allArrivalJobsQueue.insert(jobObject);
+                incomingJobs.add(jobObject);
             }
-            System.out.println("\nTask 3: ");
-            System.out.print("Execution Order: [");
-            int clock = 0;
-            MinPriorityQueue<ArrivalProcessJob> ArrivedJobs = new MinPriorityQueue<ArrivalProcessJob>(jobAmount);
-            ArrivalJob firstJob = allArrivalJobsQueue.delMin();
-            System.out.print(firstJob.getJobID() + ", ");
-            int nextJobEndingTime = firstJob.getProcessTime();
 
-            while (!allArrivalJobsQueue.isEmpty()) {
-                clock++;
-                // only want to delMin if arrivalJob
-                ArrivalJob nextJobInQueue = allArrivalJobsQueue.readMin();
-                if (nextJobInQueue.getArrival() == clock) {
-                    ArrivalJob nextArrivalJob = allArrivalJobsQueue.delMin();
-                    ArrivalProcessJob arrivalProcessJob = new ArrivalProcessJob(nextArrivalJob);
-                    ArrivedJobs.insert(arrivalProcessJob);
+            MinPriorityQueue<ArrivalJob> jobQueue = new MinPriorityQueue<ArrivalJob>(jobAmount);
+            int currTime = 0, currProcessTime = 0;
+
+            while(!(jobsCompleted==jobAmount)) {
+                for (ArrivalJob incomingJob : incomingJobs) { // check arrival of objects withing the queue
+                    if (incomingJob.getArrival() == currTime) {
+                        jobQueue.insert(incomingJob);// put into PQ
+                    }
                 }
-                if (clock >= nextJobEndingTime && !ArrivedJobs.isEmpty()) {
-                    ArrivalProcessJob nextJobToRun = ArrivedJobs.delMin();
-                    nextJobEndingTime = clock + nextJobToRun.getProcessTime();
-                    System.out.print(nextJobToRun.getJobID() + ", ");
+
+                if (currProcessTime == 0 && !(jobsCompleted==jobAmount)) {
+                    currProcessTime = jobQueue.readMin().getProcessTime();
+                    jobExecutionOrder.add(jobQueue.readMin()); // when you print it out do .getJobID
+                    ArrivalJob deletedJob = jobQueue.delMin();
+                    jobsCompleted++;
                 }
+                currTime++;
+                currProcessTime--;
             }
-            System.out.print("]");
-
-            return allArrivalJobsQueue; // returns the jobQueue
-
+            return jobExecutionOrder; // returns the jobQueue
 
         } catch (FileNotFoundException e) {
             System.out.println("Error occurred while reading File");
@@ -108,44 +103,66 @@ public class MinPQProcessor {
 
     // PRINT OUT EACH TASK: 1, 2
     public void printTask1ExecutionOrder(MinPriorityQueue<Job> jobQueue){
-        int sum = 0, average = 0, count = 0;
+        ArrayList<Integer> jobEndingTimes = new ArrayList<Integer>();
+        int sum = 0, averageProcTimeOfEachJob = 0, count = 0;
         System.out.print("Execution order: [");
         while (!jobQueue.isEmpty()) {
             Job deletedMin = jobQueue.delMin();
             System.out.print(deletedMin.getJobID() + ", ");
             sum += deletedMin.getProcessTime();
+            jobEndingTimes.add(sum);
             count++;
         }
+        int sumOfJobCompletionTime = 0;
+        for (Integer endingtime : jobEndingTimes) {
+            sumOfJobCompletionTime += endingtime;
+        }
         System.out.print("]");
-        average = sum/count;
-        System.out.println("\nAverage Completion Time: " + average);
+        averageProcTimeOfEachJob = sum / count;
+        System.out.println("\nAverage Completion Time: " + sumOfJobCompletionTime/count + "   (Of All Jobs After All Jobs Finished Processing)");
+        System.out.println("Average Completion Time (for individual jobs): " + averageProcTimeOfEachJob);
     }
+
     public void printTask2ExecutionOrder(MinPriorityQueue<PriorityJob> jobQueue){
-        int sum = 0, average = 0, count = 0;
+        ArrayList<Integer> jobEndingTimes = new ArrayList<Integer>();
+        int sum = 0, count = 0;
         System.out.print("Execution order: [");
         while (!jobQueue.isEmpty()) {
             PriorityJob deletedMin = jobQueue.delMin();
             System.out.print(deletedMin.getJobID() + ", ");
             sum += deletedMin.getProcessTime();
+            jobEndingTimes.add(sum);
             count++;
         }
         System.out.print("]");
-        average = sum/count;
-        System.out.println("\nAverage Completion Time: " + average);
+
+        // AVERAGES
+        int sumOfJobCompletionTime = 0;
+        for (Integer endingtime : jobEndingTimes) {
+            sumOfJobCompletionTime += endingtime;
+        }
+        System.out.println("\nAverage Completion Time: " + sumOfJobCompletionTime/count + "   (Of All Jobs After All Jobs Finished Processing)");
+        System.out.println("Average Completion Time (for individual jobs): " + sum/count);
     }
-//    public void printTask3ExecutionOrder(MinPriorityQueue<ArrivalJob> jobQueue){
-//        int sum = 0, average = 0, count = 0, clock = 0;
-//        System.out.print("Execution order: [");
-//        while (!jobQueue.isEmpty()) {
-//            // deletes the minimum processing time from the queue
-//
-//            ArrivalJob deletedMin = jobQueue.delMin();
-//            System.out.print(deletedMin.getJobID() + ", ");
-//            sum += deletedMin.getProcessTime();
-//            count++;
-//        }
-//        System.out.print("]");
-//        //average = sum/count;
-//        System.out.println("\nAverage Completion Time: " + average);
-//    }
+
+    public void printTask3ExecutionOrder(ArrayList<ArrivalJob> orderedJobs){
+        ArrayList<Integer> jobEndingTimes = new ArrayList<Integer>();
+        int sum = 0, count =0;
+        System.out.print("Execution Order: [");
+        for (ArrivalJob job : orderedJobs) {
+            System.out.print(job.getJobID() + ", ");
+            sum +=  job.getProcessTime();
+            jobEndingTimes.add(sum);
+            count++;
+        }
+        System.out.print("]");
+
+        // AVERAGES
+        int sumOfJobCompletionTime = 0;
+        for (Integer endingtime : jobEndingTimes) {
+            sumOfJobCompletionTime += endingtime;
+        }
+        System.out.println("\nAverage Completion Time: " + sumOfJobCompletionTime/count + "   (Of All Jobs After All Jobs Finished Processing)");
+        System.out.println("Average Completion Time (for individual jobs): " + sum/count + "\n");
+    }
 }
